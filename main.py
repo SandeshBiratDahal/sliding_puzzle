@@ -3,6 +3,8 @@ import pygame as pg, sys, random
 pg.init()
 
 scr = pg.display.set_mode((800, 800))
+clock = pg.time.Clock()
+font = pg.font.Font(None, 32)
 
 class Puzzle:
     def __init__(self, sprite_path: str, image_size: tuple[int] = (800, 800), cell_size: int = 100):
@@ -95,8 +97,7 @@ class Puzzle:
             i += 1
         return True
 
-def main():
-
+def main(_):
     puzzle = Puzzle("images/charizard.png", cell_size=400)
     puzzle.randomize()
     while True:
@@ -108,10 +109,43 @@ def main():
 
             elif event.type == pg.MOUSEBUTTONDOWN:
                 puzzle.handle_sliding(mouse)
-                print(puzzle.is_solved())
+                if puzzle.is_solved(): return puzzle, winscreen
 
         scr.fill((0, 0, 0))
         puzzle.render(scr)
+        clock.tick(60)
         pg.display.flip()
 
-if __name__ == "__main__": main()
+def winscreen(puzzle: Puzzle):
+    opacity = 0
+    while True:
+        opacity += 3
+        opacity = min(255, opacity)
+
+        events = pg.event.get()
+        for event in events:
+            if event.type == pg.QUIT: sys.exit()
+
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE: return None, mainmenu
+
+        scr.fill((0, 0, 0))
+        puzzle.render(scr)
+        puzzle.full_sprite.set_alpha(opacity)
+        scr.blit(puzzle.full_sprite, (0, 0))
+
+        
+        if opacity == 255:
+            pg.draw.rect(scr, (255, 255, 255), [0, 800 - 32, 800, 132])
+            scr.blit(
+                font.render("You Won! Press <SPACE> to go to main menu!", True, (0, 0, 0)), (150, 800 - 24)
+            )
+        clock.tick(60)
+        pg.display.flip()
+
+def mainmenu(_):
+    pass
+
+if __name__ == "__main__": 
+    args, section = None, main
+    while True: args, section = section(args)
