@@ -14,22 +14,89 @@ class Puzzle:
             for i in range(self.image_size[0] // self.cell_size)
             for j in range(self.image_size[1] // self.cell_size)
         }
+        self.individual_sprite_positions = [list(key) for key, item in self.individual_sprite.items()]
+        self.remaining_piece = self.individual_sprite[(0, 0)]
+        del self.individual_sprite[(0, 0)]
+        self.current_empty_cell = (0, 0)
 
     def render(self, surf: pg.Surface): 
-        for pos, sprite in self.individual_sprite.items():
-            surf.blit(sprite, pos)
+        i = 1
+        for pos, sprite in (self.individual_sprite.items()):
+            surf.blit(sprite, self.individual_sprite_positions[i])
+            i += 1
         for i in range(self.image_size[0] // self.cell_size):
             for j in range(self.image_size[1] // self.cell_size):
                 pg.draw.rect(surf, (0, 0, 0), (i * self.cell_size, j * self.cell_size, self.cell_size, self.cell_size), 1)
+
+    def check_up(self, x: int, y: int):
+        while y >= 0:
+            if (x, y) == self.current_empty_cell: return True
+            y -= 1
+        return False
+
+    def check_down(self, x: int, y: int):
+        while y <= 8:
+            if (x, y) == self.current_empty_cell: return True
+            y += 1
+        return False
+    
+    def check_left(self, x: int, y: int):
+        while x >= 0:
+            if (x, y) == self.current_empty_cell: return True
+            x -= 1
+        return False
+
+    def check_right(self, x: int, y: int):
+        while x <= 8:
+            if (x, y) == self.current_empty_cell: return True
+            x += 1
+        return False
+
+    def handle_sliding(self, mouse_pos: tuple[int]):
+        x, y = mouse_pos[0] // self.cell_size, mouse_pos[1] // self.cell_size
+
+        if self.check_up(x, y):
+            i = 1
+            for pos, sprite in self.individual_sprite.items():
+                if self.individual_sprite_positions[i][0] // self.cell_size == x and self.individual_sprite_positions[i][1] // self.cell_size <= y and self.individual_sprite_positions[i][1] // self.cell_size > self.current_empty_cell[1]:
+                    self.individual_sprite_positions[i][1] -= self.cell_size
+                i += 1
+            self.current_empty_cell = x, y
+        elif self.check_left(x, y):
+            i = 1
+            for pos, sprite in self.individual_sprite.items():
+                if self.individual_sprite_positions[i][1] // self.cell_size == y and self.individual_sprite_positions[i][0] // self.cell_size <= x and self.individual_sprite_positions[i][0] // self.cell_size > self.current_empty_cell[0]:
+                    self.individual_sprite_positions[i][0] -= self.cell_size
+                i += 1
+            self.current_empty_cell = x, y
+        elif self.check_down(x, y):
+            i = 1
+            for pos, sprite in self.individual_sprite.items():
+                if self.individual_sprite_positions[i][0] // self.cell_size == x and self.individual_sprite_positions[i][1] // self.cell_size >= y and self.individual_sprite_positions[i][1] // self.cell_size < self.current_empty_cell[1]:
+                    self.individual_sprite_positions[i][1] += self.cell_size
+                i += 1
+            self.current_empty_cell = x, y
+        elif self.check_right(x, y):
+            i = 1
+            for pos, sprite in self.individual_sprite.items():
+                if self.individual_sprite_positions[i][1] // self.cell_size == y and self.individual_sprite_positions[i][0] // self.cell_size >= x and self.individual_sprite_positions[i][0] // self.cell_size < self.current_empty_cell[0]:
+                    self.individual_sprite_positions[i][0] += self.cell_size
+                i += 1
+            self.current_empty_cell = x, y
+
 def main():
 
     puzzle = Puzzle("images/charizard.png")
 
     while True:
         events = pg.event.get()
+        mouse = pg.mouse.get_pos()
         for event in events:
             if event.type == pg.QUIT:
                 sys.exit()
+
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                puzzle.handle_sliding(mouse)
 
         scr.fill((0, 0, 0))
         puzzle.render(scr)
