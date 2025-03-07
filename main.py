@@ -166,7 +166,7 @@ def mainmenu(_):
                         if not current_image:
                             with open("settings.py", "r") as myfile:
                                 current_image = eval(myfile.read())["current_image"]
-                        puzzle = Puzzle(f"images/{current_image}", cell_size=400)
+                        puzzle = Puzzle(f"images/{current_image}", cell_size=200)
                         return puzzle, main
 
         scr.fill((135, 180, 255))
