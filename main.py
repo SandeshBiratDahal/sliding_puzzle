@@ -1,4 +1,4 @@
-import pygame as pg, sys, random
+import pygame as pg, sys, random, os
 
 pg.init()
 
@@ -57,7 +57,6 @@ class Puzzle:
 
     def handle_sliding(self, mouse_pos: tuple[int]):
         x, y = mouse_pos[0] // self.cell_size, mouse_pos[1] // self.cell_size
-
         if self.check_up(x, y):
             i = 0
             for pos, sprite in self.individual_sprite.items():
@@ -97,9 +96,8 @@ class Puzzle:
             i += 1
         return True
 
-def main(_):
-    puzzle = Puzzle("images/charizard.png", cell_size=400)
-    puzzle.randomize()
+def main(puzzle: Puzzle):
+    puzzle.randomize(1000)
     while True:
         events = pg.event.get()
         mouse = pg.mouse.get_pos()
@@ -134,7 +132,6 @@ def winscreen(puzzle: Puzzle):
         puzzle.full_sprite.set_alpha(opacity)
         scr.blit(puzzle.full_sprite, (0, 0))
 
-        
         if opacity == 255:
             pg.draw.rect(scr, (255, 255, 255), [0, 800 - 32, 800, 132])
             scr.blit(
@@ -144,8 +141,82 @@ def winscreen(puzzle: Puzzle):
         pg.display.flip()
 
 def mainmenu(_):
-    pass
+
+    buttons = ["Start!", "Choose Image"]
+    current_button = 0
+    current_image = ""
+    
+    while True:
+        events = pg.event.get()
+        for event in events:
+            if event.type == pg.QUIT: sys.exit()
+
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_w: current_button -= 1
+                elif event.key == pg.K_s: current_button += 1
+
+                current_button = max(current_button, 0)
+                current_button = min(current_button, len(buttons) - 1)
+
+                if event.key == pg.K_RETURN:
+                    if current_button == 1:
+                        current_image = image_selector()
+                    
+                    if current_button == 0:
+                        if not current_image:
+                            with open("settings.py", "r") as myfile:
+                                current_image = eval(myfile.read())["current_image"]
+                        puzzle = Puzzle(f"images/{current_image}", cell_size=400)
+                        return puzzle, main
+
+        scr.fill((135, 180, 255))
+        for i, button in enumerate(buttons):
+            color = "black"
+            if i == current_button: color = "blue"
+            text_render = font.render(button, True, color)
+            scr.blit(text_render, (400 - text_render.get_width() // 2, 100 * i + 300))
+            pg.draw.rect(scr, color, [400 - text_render.get_width() // 2 - 20, 100 * i + 300 - 20, text_render.get_width() + 40, text_render.get_height() + 40], 3)
+        text_render = font.render("Use <W> and <S> to navigate and <ENTER> to select.", True, "black")
+        scr.blit(text_render, (400 - text_render.get_width() // 2, 700))
+        clock.tick(60)
+
+        pg.display.flip()
+
+def image_selector():
+    files = os.listdir("images/")
+    files = [file for file in files if file.endswith(".png") or file.endswith(".jpg")]
+
+    current_button = 0
+    buttons = files.copy()
+
+    while True:
+        events = pg.event.get()
+        for event in events:
+            if event.type == pg.QUIT: sys.exit()
+
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_w: current_button -= 1
+                elif event.key == pg.K_s: current_button += 1
+
+                current_button = max(current_button, 0)
+                current_button = min(current_button, len(buttons) - 1)
+
+                if event.key == pg.K_RETURN:
+                    with open("settings.py", "w") as myfile:
+                        myfile.write(str({"current_image": buttons[current_button]}))
+                    return buttons[current_button]
+
+        scr.fill((135, 180, 255))
+        for i, button in enumerate(buttons):
+            color = "black"
+            if i == current_button: color = "blue"
+            text_render = font.render(button, True, color)
+            scr.blit(text_render, (400 - text_render.get_width() // 2, 100 * i + 26))
+            pg.draw.rect(scr, color, [400 - text_render.get_width() // 2 - 20, 100 * i + 10, text_render.get_width() + 40, text_render.get_height() + 40], 3)
+        clock.tick(60)
+        pg.display.flip()
+
 
 if __name__ == "__main__": 
-    args, section = None, main
+    args, section = None, mainmenu
     while True: args, section = section(args)
