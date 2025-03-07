@@ -1,1 +1,1 @@
-{'current_image': 'charizard.png'}
+{'current_image': 'github.png'}

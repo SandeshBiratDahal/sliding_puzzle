@@ -11,6 +11,7 @@ class Puzzle:
         self.full_sprite = pg.image.load(sprite_path).convert_alpha()
         self.cell_size = cell_size
         self.image_size = image_size
+        self.full_sprite = pg.transform.scale(self.full_sprite, self.image_size)
         self.individual_sprite = {
             (i * cell_size, j * cell_size): self.full_sprite.subsurface((i * cell_size, j * cell_size, cell_size, cell_size))
             for i in range(self.image_size[0] // self.cell_size)
