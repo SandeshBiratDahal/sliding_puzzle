@@ -211,8 +211,8 @@ def image_selector():
             color = "black"
             if i == current_button: color = "blue"
             text_render = font.render(button, True, color)
-            scr.blit(text_render, (400 - text_render.get_width() // 2, 100 * i + 26))
-            pg.draw.rect(scr, color, [400 - text_render.get_width() // 2 - 20, 100 * i + 10, text_render.get_width() + 40, text_render.get_height() + 40], 3)
+            scr.blit(text_render, (400 - text_render.get_width() // 2, 100 * i + 32 + 8))
+            pg.draw.rect(scr, color, [400 - text_render.get_width() // 2 - 20, 100 * i + 20, text_render.get_width() + 40, text_render.get_height() + 40], 3)
         clock.tick(60)
         pg.display.flip()
 
